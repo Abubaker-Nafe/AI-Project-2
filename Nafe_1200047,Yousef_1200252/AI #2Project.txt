@@ -1,0 +1,109 @@
+import numpy as np
+import csv
+import sys
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from scipy.spatial import distance
+
+TEST_SIZE = 0.3
+K = 3
+
+
+class NN:
+    def __init__(self, trainingFeatures, trainingLabels) -> None:
+        self.trainingFeatures = trainingFeatures
+        self.trainingLabels = trainingLabels
+
+    def predict(self, features, k):
+        predictions = []
+        for test_point in features:
+            distances = []
+            for train_point in self.trainingFeatures:
+                distances.append(distance.euclidean(test_point, train_point))
+            indices = np.argsort(distances)[:k]
+            labels = [self.trainingLabels[i] for i in indices]
+            prediction = max(set(labels), key=labels.count)
+            predictions.append(prediction)
+        return predictions
+
+
+def load_data(filename):
+    features = []
+    labels = []
+    with open(filename, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            features.append(list(map(float, row[:-1])))
+            labels.append(int(row[-1]))
+    return features, labels
+
+
+def preprocess(features):
+    features = np.array(features)
+    mean = np.mean(features, axis=0)
+    std = np.std(features, axis=0)
+    return (features - mean) / std
+
+
+def train_mlp_model(features, labels):
+    model = MLPClassifier(hidden_layer_sizes=(
+        10, 5), activation='logistic', max_iter=4601)
+    model.fit(features, labels)
+    return model
+
+
+def evaluate(labels, predictions):
+    accuracy = accuracy_score(labels, predictions)
+    precision = precision_score(labels, predictions)
+    recall = recall_score(labels, predictions)
+    f1 = f1_score(labels, predictions)
+    return accuracy, precision, recall, f1
+
+
+def main():
+    if len(sys.argv) != 2:
+        sys.exit("Usage: python template.py ./spambase.csv")
+
+    features, labels = load_data(sys.argv[1])
+    features = preprocess(features)
+    X_train, X_test, y_train, y_test = train_test_split(
+        features, labels, test_size=TEST_SIZE)
+
+    model_nn = NN(X_train, y_train)
+    predictions = model_nn.predict(X_test, K)
+    accuracy, precision, recall, f1 = evaluate(y_test, predictions)
+
+    print("**** 1-Nearest Neighbor Results ****")
+    print("Accuracy: ", accuracy)
+    print("Precision: ", precision)
+    print("Recall: ", recall)
+    print("F1: ", f1)
+
+    model = train_mlp_model(X_train, y_train)
+    predictions = model.predict(X_test)
+    accuracy, precision, recall, f1 = evaluate(y_test, predictions)
+
+    print("**** MLP Results ****")
+    print("Accuracy: ", accuracy)
+    print("Precision: ", precision)
+    print("Recall: ", recall)
+    print("F1: ", f1)
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+output:
+**** 1-Nearest Neighbor Results ****
+Accuracy:  0.8986241853729182
+Precision:  0.8907407407407407
+Recall:  0.8558718861209964
+F1:  0.8729582577132486
+**** MLP Results ****
+Accuracy:  0.9384503982621288
+Precision:  0.9312839059674503
+Recall:  0.9163701067615658
+F1:  0.9237668161434978

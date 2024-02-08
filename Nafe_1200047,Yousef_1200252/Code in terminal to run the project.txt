@@ -1,0 +1,23 @@
+cd C:\Users\DELL\Desktop\spam
+python project.py ./spambase.csv
+
+
+output:
+**** 1-Nearest Neighbor Results ****
+Accuracy:  0.8928312816799421
+Precision:  0.8768656716417911
+Recall:  0.8514492753623188
+F1:  0.8639705882352942
+Confusion Matrix - 1-Nearest Neighbor (NNR):
+[[763  66]
+ [ 82 470]]
+
+
+**** MLP Results ****
+Accuracy:  0.9319333816075308
+Precision:  0.922509225092251
+Recall:  0.9057971014492754  
+F1:  0.9140767824497259      
+Confusion Matrix - MLP:      
+[[787  42]
+ [ 52 500]]
